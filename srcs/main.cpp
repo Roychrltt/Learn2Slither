@@ -1,9 +1,7 @@
 #include "../includes/Game.hpp"
-#include <chrono>
 
 int main(int ac, char **av)
 {
-	auto start = std::chrono::high_resolution_clock::now();
 	Config cfg;
 	if (!parseArgs(ac, av, cfg))
 	{
@@ -41,7 +39,7 @@ int main(int ac, char **av)
 			if (qtable[state][2] > qtable[state][a]) a = 2;
 			if (roll(rng) < rand) a = ra(rng);
 			auto e = snake.takeAction(board, static_cast<Action>(a), rng);
-			if (cfg.visual)
+			if (i > 5000 && cfg.visual)
 			{
 				BeginDrawing();
 				ClearBackground(BLACK);
@@ -81,12 +79,13 @@ int main(int ac, char **av)
 					Vector2 mouse = GetMousePosition();
 					if (CheckCollisionPointRec(mouse, {620, 175, 160, 30}))
 					{
-						speed = 1.0f + (mouse.x - 620) / 160.0f * 200.0f;
-						if (speed < 1) speed = 1;
-						if (speed > 120) speed = 120;
+						speed = (mouse.x - 620) / 160.0f * 200.0f;
+						if (speed < 1.0f) speed = 1.0f;
+						if (speed > 200.0f) speed = 200.0f;
 					}
 				}
-				DrawRectangle(620 + (int)((speed - 1) / 119.0f * 150), 180, 10, 20, RAYWHITE);
+				int handleX = 620 + static_cast<int>((speed / 200.0f) * 160.0f);
+				DrawRectangle(handleX, 180, 10, 20, RAYWHITE);
 				SetTargetFPS(speed);
 				EndDrawing();
 			}
@@ -116,10 +115,6 @@ int main(int ac, char **av)
 	output.close();
 	std::cout << cfg.sessions << " training loops finished. Best length: " << len << std::endl;
 	std::cout << "Average length: " << lenSum / cfg.sessions << std::endl;
-	auto end = std::chrono::high_resolution_clock::now();
-
-	double duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-	std::cout << "Execution Time: " << duration / 1e6 << " seconds\n";
 	if (cfg.visual) CloseWindow();
 	return 0;
 }
