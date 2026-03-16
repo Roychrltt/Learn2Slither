@@ -1,74 +1,9 @@
 #include "../includes/Game.hpp"
-
-void	printUsage(void)
-{
-    std::cout << "Usage: ./snake [OPTIONS]\n\n";
-    std::cout << "Description:\n";
-    std::cout << "  A Reinforcement Learning Snake agent using Q-Learning.\n\n";
-    
-    std::cout << "Options:\n";
-    std::cout << "  --session <n>    Number of training sessions/episodes to run.\n";
-    std::cout << "  --load <file>    Load a pre-trained Q-Table/Model from a JSON/txt file.\n";
-    std::cout << "  --nolearn        Disable Q-Table updates (useful for testing a loaded model).\n";
-    std::cout << "  --novisual       Train the model without the graphical interface (faster training).\n";
-    std::cout << "  --help           Display this help message and exit.\n\n";
-
-    std::cout << "Examples:\n";
-    std::cout << "./snake --session 50000\n";
-    std::cout << "./snake --load Session01.json --nolearn\n";
-    std::cout << "./snake --novisual --session 100000\n\n";
-    
-    std::cout << "Lobby Controls (Visual Mode Only):\n";
-    std::cout << "  - Use the slider to adjust game speed (FPS).\n";
-    std::cout << "  - Click 'Export' to save the current Q-Table as SessionXX.json.\n";
-    std::cout << "  - Toggle Auto/Step-by-step mode to debug the agent's decisions.\n";
-}
-
-bool parseArgs(int ac, char** av, Config& cfg)
-{
-	for (int i = 1; i < ac; ++i)
-	{
-		std::string arg = av[i];
-
-		if (arg == "--help") return false;
-		else if (arg == "--nolearn") cfg.learn = false;
-		else if (arg == "--novisual") cfg.visual = false;
-		else if (arg == "--session")
-		{
-			if (i + 1 < ac) cfg.sessions = std::stoi(av[++i]);
-			else
-			{
-				std::cerr << "Error: --session requires a value.\n";
-				return false;
-			}
-		}
-		else if (arg == "--load")
-		{
-			if (i + 1 < ac) cfg.loadFile = av[++i];
-			else
-			{
-				std::cerr << "Error: --load requires a file path.\n";
-				return false;
-			}
-		}
-		else
-		{
-			std::cerr << "Error: Unknown argument '" << arg << "'\n";
-			return false;
-		}
-	}
-	return true;
-}
-
-void	update(uint8_t s, uint8_t a, float r, uint8_t s2, std::vector<std::vector<float>>& qtable)
-{
-	float alpha = 0.1, gamma = 0.25;
-	float maxNext = std::max({qtable[s2][0], qtable[s2][1], qtable[s2][2]});
-	qtable[s][a] += alpha * (r + gamma * maxNext - qtable[s][a]);
-}
+#include <chrono>
 
 int main(int ac, char **av)
 {
+	auto start = std::chrono::high_resolution_clock::now();
 	Config cfg;
 	if (!parseArgs(ac, av, cfg))
 	{
@@ -77,17 +12,16 @@ int main(int ac, char **av)
 	}
 
 	const int cellSize = 60;
-	const int screenWidth = GRID_W * cellSize;
+	const int screenWidth = GRID_W * cellSize + 330;
 	const int screenHeight = GRID_H * cellSize;
+	float speed = 15;
 	if (cfg.visual)
-	{
 		InitWindow(screenWidth, screenHeight, "Learn2Slither by Charlotte");
-		SetTargetFPS(15);
-	}
+	Font customFont = LoadFont("font/Bold.ttf");
 	std::vector<std::vector<float>> qtable(STATECOUNT, std::vector<float>(ACTIONCOUNT));
 	int len = 0;
 	int i = 0;
-	float rand = 10.0;
+	float rand = 1.0;
 	std::mt19937 rng(std::random_device{}());
 	std::uniform_real_distribution<float> roll(0, 1);
 	std::uniform_int_distribution<int> ra(0, 2);
@@ -105,7 +39,7 @@ int main(int ac, char **av)
 			int a = 0;
 			if (qtable[state][1] > qtable[state][a]) a = 1;
 			if (qtable[state][2] > qtable[state][a]) a = 2;
-			if (i < 4000 && roll(rng) < rand) a = ra(rng);
+			if (roll(rng) < rand) a = ra(rng);
 			auto e = snake.takeAction(board, static_cast<Action>(a), rng);
 			if (cfg.visual)
 			{
@@ -130,6 +64,30 @@ int main(int ac, char **av)
 							DrawRectangleLinesEx(rect, 1, DARKGRAY);
 					}
 				}
+				DrawRectangle(600, 0, 400, 600, Color{40, 40, 40, 255});
+				DrawTextEx(customFont, "Learn2Slither", Vector2{620, 20}, 40, 2, GOLD);
+				DrawLine(610, 65, 920, 60, DARKGRAY);
+
+				DrawTextEx(customFont, TextFormat("Session: %d", i), Vector2{620, 80}, 20, 1, RAYWHITE);
+				DrawTextEx(customFont, TextFormat("Max Length: %d", len), Vector2{620, 105}, 20, 1, LIME);
+				DrawTextEx(customFont, TextFormat("Avg Length: %d", (i > 0 ? lenSum / i : 0)), Vector2{620, 130}, 20, 1, SKYBLUE);
+				DrawTextEx(customFont, TextFormat("Speed: %i FPS", static_cast<int>(speed)), Vector2{620, 155}, 20, 1, RAYWHITE);
+
+				Rectangle sliderBar = { 620, 185, 160, 10 };
+				DrawRectangleRec(sliderBar, BLACK);
+
+				if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+				{
+					Vector2 mouse = GetMousePosition();
+					if (CheckCollisionPointRec(mouse, {620, 175, 160, 30}))
+					{
+						speed = 1.0f + (mouse.x - 620) / 160.0f * 200.0f;
+						if (speed < 1) speed = 1;
+						if (speed > 120) speed = 120;
+					}
+				}
+				DrawRectangle(620 + (int)((speed - 1) / 119.0f * 150), 180, 10, 20, RAYWHITE);
+				SetTargetFPS(speed);
 				EndDrawing();
 			}
 
@@ -141,7 +99,7 @@ int main(int ac, char **av)
 			else r = cfg.rewardDie;
 
 			int s2 = snake.getState(board);
-			update(state, a, r, s2, qtable);
+			if (cfg.learn) update(state, a, r, s2, qtable);
 			curLen = std::max(curLen, snake.length());
 			if (e == StepEvent::Died) break;
 		}
@@ -158,6 +116,10 @@ int main(int ac, char **av)
 	output.close();
 	std::cout << cfg.sessions << " training loops finished. Best length: " << len << std::endl;
 	std::cout << "Average length: " << lenSum / cfg.sessions << std::endl;
+	auto end = std::chrono::high_resolution_clock::now();
+
+	double duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+	std::cout << "Execution Time: " << duration / 1e6 << " seconds\n";
 	if (cfg.visual) CloseWindow();
 	return 0;
 }

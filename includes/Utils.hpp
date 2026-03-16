@@ -73,3 +73,6 @@ constexpr std::pair<int, int> dirToPar(Direction d) noexcept
 		default:			   return {-1, 0};	
 	}
 }
+void	printUsage(void);
+bool	parseArgs(int ac, char** av, Config& cfg);
+void	update(uint8_t s, uint8_t a, float r, uint8_t s2, std::vector<std::vector<float>>& qtable);

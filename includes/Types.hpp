@@ -6,7 +6,7 @@ constexpr int GRID_H = 10;
 constexpr int MAXSTEP = 1000;
 constexpr int ACTIONCOUNT = 3;
 constexpr int STATECOUNT = 64;
-constexpr float DECAY = 0.95;
+constexpr float DECAY = 0.925;
 
 enum class Cell : uint8_t { Empty, SnakeBody, GreenApple, RedApple, Stone };
 
