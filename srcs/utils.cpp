@@ -66,3 +66,37 @@ void	update(uint8_t s, uint8_t a, float r, uint8_t s2, std::vector<std::vector<f
 	float maxNext = std::max({qtable[s2][0], qtable[s2][1], qtable[s2][2]});
 	qtable[s][a] += alpha * (r + gamma * maxNext - qtable[s][a]);
 }
+
+void exportModel(const std::vector<std::vector<float>>& qtable, const Config& cfg, int sessionID)
+{
+	std::string filename = "Session" + std::to_string(sessionID) + ".json";
+	std::ofstream file(filename);
+	if (!file.is_open()) return;
+
+	file << "{\n";
+	file << "  \"metadata\": {\n";
+	file << "    \"session\": " << sessionID << ",\n";
+	file << "    \"grid width\": " << GRID_W << ",\n";
+	file << "    \"grid height\": " << GRID_H << "\n";
+	file << "  },\n";
+
+	file << "  \"rewards\": {\n";
+	file << "    \"green_apple\": " << cfg.rewardGreen << ",\n";
+	file << "    \"red_apple\": " << cfg.rewardRed << ",\n";
+	file << "    \"death\": " << cfg.rewardDie << ",\n";
+	file << "    \"idle\": " << cfg.rewardIdle << ",\n";
+	file << "    \"closer\": " << cfg.rewardCloser << "\n";
+	file << "  },\n";
+
+	file << "  \"qtable\": [\n";
+	file << std::fixed << std::setprecision(4);
+	for (size_t i = 0; i < qtable.size(); ++i) {
+		file << "    [" << qtable[i][0] << ", " << qtable[i][1] << ", " << qtable[i][2] << "]";
+		if (i < qtable.size() - 1) file << ",";
+		file << "\n";
+	}
+	file << "  ]\n";
+	file << "}";
+
+	file.close();
+}

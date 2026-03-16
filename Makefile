@@ -15,6 +15,7 @@ SRC_DIR = ./srcs/
 OBJ_DIR = .objs/
 
 SRC_FILES = main.cpp utils.cpp
+#SRC_FILES = test.cpp
 
 SRC = $(addprefix $(SRC_DIR), $(SRC_FILES))
 

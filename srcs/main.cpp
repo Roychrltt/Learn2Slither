@@ -10,12 +10,15 @@ int main(int ac, char **av)
 	}
 
 	const int cellSize = 60;
-	const int screenWidth = GRID_W * cellSize + 330;
+	const int screenWidth = GRID_W * cellSize + 340;
 	const int screenHeight = GRID_H * cellSize;
 	float speed = 15;
+	Font customFont = GetFontDefault();
 	if (cfg.visual)
+	{
 		InitWindow(screenWidth, screenHeight, "Learn2Slither by Charlotte");
-	Font customFont = LoadFont("font/Bold.ttf");
+		customFont = LoadFont("font/Bold.ttf");
+	}
 	std::vector<std::vector<float>> qtable(STATECOUNT, std::vector<float>(ACTIONCOUNT));
 	int len = 0;
 	int i = 0;
@@ -39,7 +42,15 @@ int main(int ac, char **av)
 			if (qtable[state][2] > qtable[state][a]) a = 2;
 			if (roll(rng) < rand) a = ra(rng);
 			auto e = snake.takeAction(board, static_cast<Action>(a), rng);
-			if (i > 5000 && cfg.visual)
+
+			float r = 0.0;
+			if (e == StepEvent::None) r = cfg.rewardIdle;
+			else if (e == StepEvent::GreenApple) r = cfg.rewardGreen;
+			else if (e == StepEvent::Closer) r = cfg.rewardCloser;
+			else if (e == StepEvent::RedApple) r = cfg.rewardRed;
+			else r = cfg.rewardDie;
+
+			if (cfg.visual)
 			{
 				BeginDrawing();
 				ClearBackground(BLACK);
@@ -62,22 +73,24 @@ int main(int ac, char **av)
 							DrawRectangleLinesEx(rect, 1, DARKGRAY);
 					}
 				}
+
 				DrawRectangle(600, 0, 400, 600, Color{40, 40, 40, 255});
-				DrawTextEx(customFont, "Learn2Slither", Vector2{620, 20}, 40, 2, GOLD);
-				DrawLine(610, 65, 920, 60, DARKGRAY);
+				DrawTextEx(customFont, " Learn2Slither", Vector2{620, 20}, 40, 2, GOLD);
+				DrawLine(610, 65, 920, 65, DARKGRAY);
 
-				DrawTextEx(customFont, TextFormat("Session: %d", i), Vector2{620, 80}, 20, 1, RAYWHITE);
-				DrawTextEx(customFont, TextFormat("Max Length: %d", len), Vector2{620, 105}, 20, 1, LIME);
-				DrawTextEx(customFont, TextFormat("Avg Length: %d", (i > 0 ? lenSum / i : 0)), Vector2{620, 130}, 20, 1, SKYBLUE);
-				DrawTextEx(customFont, TextFormat("Speed: %i FPS", static_cast<int>(speed)), Vector2{620, 155}, 20, 1, RAYWHITE);
+				DrawTextEx(customFont, TextFormat("Session: %d", i), Vector2{620, 80}, 30, 1, RAYWHITE);
+				DrawTextEx(customFont, TextFormat("Max Length: %d", len), Vector2{620, 115}, 30, 1, LIME);
+				DrawTextEx(customFont, TextFormat("Avg Length: %d", (i > 0 ? lenSum / i : 0)), Vector2{620, 150}, 30, 1, SKYBLUE);
+				DrawTextEx(customFont, TextFormat("Current reward: %.2f", r), Vector2{620, 185}, 30, 1, RAYWHITE);
+				DrawTextEx(customFont, TextFormat("Speed: %i FPS", static_cast<int>(speed)), Vector2{620, 220}, 30, 1, RAYWHITE);
 
-				Rectangle sliderBar = { 620, 185, 160, 10 };
+				Rectangle sliderBar = { 620, 260, 160, 10 };
 				DrawRectangleRec(sliderBar, BLACK);
 
 				if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
 				{
 					Vector2 mouse = GetMousePosition();
-					if (CheckCollisionPointRec(mouse, {620, 175, 160, 30}))
+					if (CheckCollisionPointRec(mouse, {615, 250, 170, 30}))
 					{
 						speed = (mouse.x - 620) / 160.0f * 200.0f;
 						if (speed < 1.0f) speed = 1.0f;
@@ -85,17 +98,18 @@ int main(int ac, char **av)
 					}
 				}
 				int handleX = 620 + static_cast<int>((speed / 200.0f) * 160.0f);
-				DrawRectangle(handleX, 180, 10, 20, RAYWHITE);
+				DrawRectangle(handleX, 255, 10, 20, RAYWHITE);
 				SetTargetFPS(speed);
+
+				Rectangle exportBtn = { 620, 280, 160, 40 };
+				bool hovering = CheckCollisionPointRec(GetMousePosition(), exportBtn);
+				DrawRectangleRec(exportBtn, hovering ? LIGHTGRAY : GRAY);
+				DrawText("EXPORT", 645, 290, 25, BLACK);
+
+				if (hovering && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+					exportModel(qtable, cfg, i);
 				EndDrawing();
 			}
-
-			float r = 0.0;
-			if (e == StepEvent::None) r = cfg.rewardIdle;
-			else if (e == StepEvent::GreenApple) r = cfg.rewardGreen;
-			else if (e == StepEvent::Closer) r = cfg.rewardCloser;
-			else if (e == StepEvent::RedApple) r = cfg.rewardRed;
-			else r = cfg.rewardDie;
 
 			int s2 = snake.getState(board);
 			if (cfg.learn) update(state, a, r, s2, qtable);
@@ -108,13 +122,13 @@ int main(int ac, char **av)
 		rand *= DECAY;
 		lenSum += curLen;
 	}
-	std::ofstream output;
-	output.open("Q-Table.txt");
-	for (auto& v : qtable)
-		output << v[0] << " " << v[1] << " " << v[2] << std::endl;
-	output.close();
+	if (cfg.learn) exportModel(qtable, cfg, cfg.sessions);
 	std::cout << cfg.sessions << " training loops finished. Best length: " << len << std::endl;
 	std::cout << "Average length: " << lenSum / cfg.sessions << std::endl;
-	if (cfg.visual) CloseWindow();
+	if (cfg.visual)
+	{
+		UnloadFont(customFont);
+		CloseWindow();
+	}
 	return 0;
 }

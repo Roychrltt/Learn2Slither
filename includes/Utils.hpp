@@ -7,6 +7,7 @@
 #include <iostream>
 #include <map>
 #include <fstream>
+#include <iomanip>
 #include <optional>
 #include <random>
 #include <ranges>
@@ -76,3 +77,5 @@ constexpr std::pair<int, int> dirToPar(Direction d) noexcept
 void	printUsage(void);
 bool	parseArgs(int ac, char** av, Config& cfg);
 void	update(uint8_t s, uint8_t a, float r, uint8_t s2, std::vector<std::vector<float>>& qtable);
+void	exportModel(const std::vector<std::vector<float>>& qtable, const Config& cfg, int sessionID);
+ 
