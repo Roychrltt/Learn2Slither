@@ -11,10 +11,11 @@ void	printUsage(void)
     std::cout << "  --load <file>    Load a pre-trained Q-Table/Model from a JSON/txt file.\n";
     std::cout << "  --nolearn        Disable Q-Table updates (useful for testing a loaded model).\n";
     std::cout << "  --novisual       Train the model without the graphical interface (faster training).\n";
+    std::cout << "  --small          Set the grid size to 10*10.\n";
+    std::cout << "  --medium         Set the grid size to 15*15.\n";
+    std::cout << "  --big            Set the grid size to 20*20.\n";
+    std::cout << "  --obstacle       Put 3 random obstacles on the grid.\n";
     std::cout << "  --help           Display this help message and exit.\n\n";
-    std::cout << "  --small          Set the grid size to 10*10.\n\n";
-    std::cout << "  --medium         Set the grid size to 15*15.\n\n";
-    std::cout << "  --big            Set the grid size to 20*20.\n\n";
 
     std::cout << "Examples:\n";
     std::cout << "./snake --session 50000 --big\n";
