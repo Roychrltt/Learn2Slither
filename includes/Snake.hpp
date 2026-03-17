@@ -9,7 +9,7 @@ class Snake
 
 	public:
 
-		Snake(std::mt19937& rng)
+		Snake(std::mt19937& rng, const Config& cfg)
 		{
 			std::uniform_int_distribution<int> dist(0, 3);
 			int d = dist(rng);
@@ -22,9 +22,9 @@ class Snake
 			else initDir = {0, 1};
 
 			int xl = std::max(0, 2 * initDir.first);
-			int xr = std::min(GRID_H - 1, GRID_H - 1 + 2 * initDir.first);
+			int xr = std::min(cfg.GRID_H - 1, cfg.GRID_H - 1 + 2 * initDir.first);
 			int yl = std::max(0, 2 * initDir.second);
-			int yr = std::min(GRID_W - 1, GRID_W - 1 + 2 * initDir.second);
+			int yr = std::min(cfg.GRID_W - 1, cfg.GRID_W - 1 + 2 * initDir.second);
 
 			std::uniform_int_distribution<int> dx(xl, xr);
 			std::uniform_int_distribution<int> dy(yl, yr);
@@ -40,11 +40,11 @@ class Snake
 		Direction						direction(void) const noexcept { return dir; };
 		int								length(void) const noexcept { return body.size(); };
 		std::deque<std::pair<int, int>> getBody(void) const noexcept { return body; };
-		StepEvent						takeAction(Board& board, Action a, std::mt19937& rng)
+		StepEvent						takeAction(Board& board, Action a, std::mt19937& rng, const Config& cfg)
 		{
 			dir = applyAction(dir, a);
 			std::pair<int, int> next = {body.front().first + dirToPar(dir).first, body.front().second + dirToPar(dir).second};
-			if (!inBounds(next) || board.get(next) == Cell::SnakeBody || board.get(next) == Cell::Stone) return StepEvent::Died;
+			if (!inBounds(next, cfg.GRID_H, cfg.GRID_W) || board.get(next) == Cell::SnakeBody || board.get(next) == Cell::Stone) return StepEvent::Died;
 			body.push_front(next);
 			std::pair<int, int> h = head();
 			std::pair<int, int> t = tail();

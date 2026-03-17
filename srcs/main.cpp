@@ -9,9 +9,16 @@ int main(int ac, char **av)
 		return 0;
 	}
 
+	std::vector<std::vector<float>> qtable(STATECOUNT, std::vector<float>(ACTIONCOUNT));
+	if (cfg.loadPath != "")
+	{
+		if (loadModel(cfg.loadPath, qtable, cfg))
+			std::cout << "Successfully loaded model from " << cfg.loadPath << std::endl;
+		else std::cerr << "Failed to load model!" << std::endl;
+	}
 	const int cellSize = 60;
-	const int screenWidth = GRID_W * cellSize + 340;
-	const int screenHeight = GRID_H * cellSize;
+	const int screenWidth = cfg.GRID_W * cellSize + 340;
+	const int screenHeight = cfg.GRID_H * cellSize;
 	float speed = 15;
 	Font customFont = GetFontDefault();
 	if (cfg.visual)
@@ -19,7 +26,6 @@ int main(int ac, char **av)
 		InitWindow(screenWidth, screenHeight, "Learn2Slither by Charlotte");
 		customFont = LoadFont("font/Bold.ttf");
 	}
-	std::vector<std::vector<float>> qtable(STATECOUNT, std::vector<float>(ACTIONCOUNT));
 	int len = 0;
 	int i = 0;
 	float rand = 1.0;
@@ -30,8 +36,8 @@ int main(int ac, char **av)
 	while (++i <= cfg.sessions)
 	{
 		int curLen = 0;
-		Snake snake(rng);
-		Board board;
+		Snake snake(rng, cfg);
+		Board board(cfg);
 		board.init(rng, snake.getBody());
 		int stepCnt = 0;
 		while (++stepCnt < MAXSTEP)
@@ -41,7 +47,7 @@ int main(int ac, char **av)
 			if (qtable[state][1] > qtable[state][a]) a = 1;
 			if (qtable[state][2] > qtable[state][a]) a = 2;
 			if (roll(rng) < rand) a = ra(rng);
-			auto e = snake.takeAction(board, static_cast<Action>(a), rng);
+			auto e = snake.takeAction(board, static_cast<Action>(a), rng, cfg);
 
 			float r = 0.0;
 			if (e == StepEvent::None) r = cfg.rewardIdle;
@@ -54,9 +60,9 @@ int main(int ac, char **av)
 			{
 				BeginDrawing();
 				ClearBackground(BLACK);
-				for (int y = 0; y < GRID_H; y++)
+				for (int y = 0; y < cfg.GRID_H; y++)
 				{
-					for (int x = 0; x < GRID_W; x++)
+					for (int x = 0; x < cfg.GRID_W; x++)
 					{
 						Rectangle rect = { (float)x * cellSize, (float)y * cellSize, (float)cellSize - 2, (float)cellSize - 2 };
 						Cell c = board.get({y, x});

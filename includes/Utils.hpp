@@ -12,6 +12,7 @@
 #include <random>
 #include <ranges>
 #include <span>
+#include <sstream>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -19,11 +20,13 @@
 
 struct Config
 {
-	int  sessions = 10000;
+	int	sessions = 10000;
+	int	GRID_W = 10;
+	int GRID_H = 10;
 	bool learn = true;
 	bool visual = true;
 
-	std::string loadFile = "";
+	std::string loadPath = "";
 
 	float rewardIdle = -0.1f;
 	float rewardGreen = 100.0f;
@@ -58,7 +61,7 @@ constexpr Direction applyAction(Direction current, Action a) noexcept
 	}
 }
 
-constexpr bool inBounds(const std::pair<int, int>& p) noexcept
+constexpr bool inBounds(const std::pair<int, int>& p, int GRID_H, int GRID_W) noexcept
 {
 	return p.first >= 0 && p.first < GRID_H && p.second >= 0 && p.second < GRID_W;
 }
@@ -78,4 +81,4 @@ void	printUsage(void);
 bool	parseArgs(int ac, char** av, Config& cfg);
 void	update(uint8_t s, uint8_t a, float r, uint8_t s2, std::vector<std::vector<float>>& qtable);
 void	exportModel(const std::vector<std::vector<float>>& qtable, const Config& cfg, int sessionID);
- 
+bool	loadModel(const std::string& filename, std::vector<std::vector<float>>& qtable, Config& cfg);

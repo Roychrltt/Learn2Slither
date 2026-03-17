@@ -5,14 +5,21 @@
 class Board
 {
 	private:
-		std::array<Cell, GRID_W * GRID_H> grid{};
+		int GRID_W;
+		int GRID_H;
+		std::vector<Cell> grid;
 
 	public:
 
-		Board() {};
+		Board(const Config& cfg)
+		{
+			GRID_W = cfg.GRID_W;
+			GRID_H = cfg.GRID_H;
+			grid.resize(GRID_W * GRID_H);
+		};
 		void				init(std::mt19937& rng, std::deque<std::pair<int, int>> body, bool ob = false)
 		{
-			grid.fill(Cell::Empty);
+			std::fill(grid.begin(), grid.end(), Cell::Empty);
 			for (const auto& segment : body)
 				set(segment, Cell::SnakeBody);
 
@@ -43,11 +50,11 @@ class Board
 		{
 			auto [dx, dy] = dirToPar(d);
 			std::pair<int, int> next = {h.first + dx, h.second + dy};
-			if (!inBounds(next)) return Cell::SnakeBody;
+			if (!inBounds(next, GRID_H, GRID_W)) return Cell::SnakeBody;
 			unsigned int idx = next.first * GRID_W + next.second;
 			if (grid[idx] == Cell::SnakeBody || grid[idx] == Cell::Stone) return Cell::SnakeBody;
 			if (grid[idx] == Cell::RedApple) return Cell::RedApple;
-			while (inBounds(next))
+			while (inBounds(next, GRID_H, GRID_W))
 			{
 				idx = next.first * GRID_W + next.second;
 				if (grid[idx] != Cell::Empty)

@@ -1,8 +1,6 @@
 #pragma once
 #include <cstdint>
 
-constexpr int GRID_W = 10;
-constexpr int GRID_H = 10;
 constexpr int MAXSTEP = 1000;
 constexpr int ACTIONCOUNT = 3;
 constexpr int STATECOUNT = 64;
