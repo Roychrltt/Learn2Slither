@@ -69,6 +69,7 @@ bool parseArgs(int ac, char** av, Config& cfg)
 			cfg.GRID_W = 20;
 			cfg.GRID_H = 20;
 		}
+		else if (arg == "--obstacle") cfg.obstacle = true;
 		else
 		{
 			std::cerr << "Error: Unknown argument '" << arg << "'\n";

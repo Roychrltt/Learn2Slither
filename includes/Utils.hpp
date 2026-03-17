@@ -25,6 +25,8 @@ struct Config
 	int GRID_H = 10;
 	bool learn = true;
 	bool visual = true;
+	bool stepbystep = false;
+	bool obstacle = false;
 
 	std::string loadPath = "";
 
