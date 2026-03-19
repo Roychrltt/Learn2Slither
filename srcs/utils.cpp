@@ -7,7 +7,7 @@ void	printUsage(void)
     std::cout << "  A Reinforcement Learning Snake agent using Q-Learning.\n\n";
 
     std::cout << "Options:\n";
-    std::cout << "  --session <n>    Number of training sessions/episodes to run.\n";
+    std::cout << "  --session <n>    Number of training sessions/episodes to run. (1000 by default)\n";
     std::cout << "  --load <file>    Load a pre-trained Q-Table/Model from a JSON/txt file.\n";
     std::cout << "  --nolearn        Disable Q-Table updates (useful for testing a loaded model).\n";
     std::cout << "  --novisual       Train the model without the graphical interface (faster training).\n";

@@ -1,1 +1,0 @@
-ggg -I. -I/opt/homebrew/include -L/opt/homebrew/lib test.cpp -lraylib -framework IOKit -framework Cocoa -framework OpenGL -o snake_game

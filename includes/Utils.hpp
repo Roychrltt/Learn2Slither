@@ -20,7 +20,7 @@
 
 struct Config
 {
-	int	sessions = 10000;
+	int	sessions = 1000;
 	int	GRID_W = 10;
 	int GRID_H = 10;
 	bool learn = true;

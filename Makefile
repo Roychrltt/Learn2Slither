@@ -1,27 +1,21 @@
 NAME = snake
-
 CPP = g++
-
 CFLAGS = -std=c++20
-
-INC = -I ./include/. -I$(RAYLIB_PATH)/include
-
+SRC_DIR = ./srcs/
+OBJ_DIR = .objs/
+SRC_FILES = main.cpp utils.cpp draw.cpp
+SRC = $(addprefix $(SRC_DIR), $(SRC_FILES))
+OBJ = $(SRC:$(SRC_DIR)%.cpp=$(OBJ_DIR)%.o)
+RM = rm -rf
+UNAME_S := $(shell uname -s)
 RAYLIB_PATH = $(HOME)/raylib_local
-
+INC = -I ./include/. -I$(RAYLIB_PATH)/include
 LDFLAGS = -L$(RAYLIB_PATH)/lib -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
-SRC_DIR = ./srcs/
-	  
-OBJ_DIR = .objs/
-
-SRC_FILES = main.cpp utils.cpp
-#SRC_FILES = test.cpp
-
-SRC = $(addprefix $(SRC_DIR), $(SRC_FILES))
-
-OBJ = $(SRC:$(SRC_DIR)%.cpp=$(OBJ_DIR)%.o)
-
-RM = rm -rf
+ifeq ($(UNAME_S), Darwin)
+    INC = -I. -I/opt/homebrew/include
+    LDFLAGS = -L/opt/homebrew/lib -lraylib -framework IOKit -framework Cocoa -framework OpenGL
+endif
 
 all: $(NAME)
 
