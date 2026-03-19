@@ -2,6 +2,8 @@
 
 int main(int ac, char **av)
 {
+	auto start = std::chrono::high_resolution_clock::now();
+
 	Config cfg;
 	if (!parseArgs(ac, av, cfg))
 	{
@@ -104,7 +106,7 @@ int main(int ac, char **av)
 			}
 
 			int s2 = snake.getState(board);
-			if (cfg.learn) update(state, a, r, s2, qtable);
+			if (cfg.learn) update(state, a, r, s2, qtable, cfg.alpha, cfg.gamma);
 			curLen = std::max(curLen, snake.length());
 			if (e == StepEvent::Died) break;
 		}
@@ -116,6 +118,9 @@ int main(int ac, char **av)
 	if (cfg.learn) exportModel(qtable, cfg, cfg.sessions);
 	std::cout << cfg.sessions << " training loops finished. Best length: " << len << std::endl;
 	std::cout << "Average length: " << lenSum / cfg.sessions << std::endl;
+	auto end = std::chrono::high_resolution_clock::now();
+	double duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+	std::cout << "Execution Time: " << duration / 1e6 << " seconds\n";
 	if (cfg.visual)
 	{
 		UnloadFont(customFont);

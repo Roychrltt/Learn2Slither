@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <deque>
@@ -23,6 +24,8 @@ struct Config
 	int	sessions = 1000;
 	int	GRID_W = 10;
 	int GRID_H = 10;
+	float alpha = 0.1f;
+	float gamma = 0.25f;
 	bool learn = true;
 	bool visual = true;
 	bool stepbystep = false;
@@ -81,6 +84,6 @@ constexpr std::pair<int, int> dirToPar(Direction d) noexcept
 }
 void	printUsage(void);
 bool	parseArgs(int ac, char** av, Config& cfg);
-void	update(uint8_t s, uint8_t a, float r, uint8_t s2, std::vector<std::vector<float>>& qtable);
+void	update(uint8_t s, uint8_t a, float r, uint8_t s2, std::vector<std::vector<float>>& qtable, float alpha, float gamma);
 void	exportModel(const std::vector<std::vector<float>>& qtable, const Config& cfg, int sessionID);
 bool	loadModel(const std::string& filename, std::vector<std::vector<float>>& qtable, Config& cfg);

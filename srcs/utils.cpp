@@ -80,9 +80,8 @@ bool parseArgs(int ac, char** av, Config& cfg)
 	return true;
 }
 
-void	update(uint8_t s, uint8_t a, float r, uint8_t s2, std::vector<std::vector<float>>& qtable)
+void	update(uint8_t s, uint8_t a, float r, uint8_t s2, std::vector<std::vector<float>>& qtable, float alpha, float gamma)
 {
-	float alpha = 0.1, gamma = 0.25;
 	float maxNext = std::max({qtable[s2][0], qtable[s2][1], qtable[s2][2]});
 	qtable[s][a] += alpha * (r + gamma * maxNext - qtable[s][a]);
 }
@@ -98,6 +97,9 @@ void exportModel(const std::vector<std::vector<float>>& qtable, const Config& cf
 	file << "    \"session\": " << sessionID << ",\n";
 	file << "    \"grid width\": " << cfg.GRID_W << ",\n";
 	file << "    \"grid height\": " << cfg.GRID_H << "\n";
+	file << "    \"alpha\": " << cfg.alpha << ",\n";
+	file << "    \"gamma\": " << cfg.gamma << ",\n";
+
 	file << "  },\n";
 
 	file << "  \"rewards\": {\n";
@@ -141,6 +143,11 @@ bool	loadModel(const std::string& filename, std::vector<std::vector<float>>& qta
 			cfg.rewardIdle = std::stof(line.substr(line.find(":") + 1));
 		else if (line.find("closer") != std::string::npos)
 			cfg.rewardCloser = std::stof(line.substr(line.find(":") + 1));
+		else if (line.find("alpha") != std::string::npos)
+			cfg.alpha = std::stof(line.substr(line.find(":") + 1));
+		else if (line.find("gamma") != std::string::npos)
+			cfg.gamma = std::stof(line.substr(line.find(":") + 1));
+
 
 		if (line.find("[") != std::string::npos && line.find("]") != std::string::npos && line.find("qtable") == std::string::npos)
 		{
