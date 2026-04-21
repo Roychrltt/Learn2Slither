@@ -34,6 +34,15 @@ Before building, ensure you have the following installed:
 ## On Linux
 - G++ (C++20 compatible)
 - Raylib: Installed in ``~/raylib_local`` (or update the ``RAYLIB_PATH`` in the Makefile).
+  ```
+  git clone https://github.com/raysan5/raylib.git
+  cd raylib/src
+  make
+  mkdir -p ~/raylib_local/include
+  mkdir -p ~/raylib_local/lib
+  cp raylib.h ~/raylib_local/include/
+  cp libraylib.a ~/raylib_local/lib/
+  ```
 - Development Headers: ``X11``, ``OpenGL``, and ``pthread``
 
 # 🏗️ Installation & Build
